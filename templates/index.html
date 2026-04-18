@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finance Toolkit Web App</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 2rem; max-width: 1000px; }
+      h1, h2 { margin-bottom: 0.25rem; }
+      .muted { color: #666; margin-top: 0; }
+      .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; }
+      th { background: #f5f5f5; }
+      input, select { padding: 0.35rem; margin-right: 0.25rem; margin-bottom: 0.25rem; }
+      .error { color: #b00020; }
+      .ok { color: #0a7b34; }
+      code { background: #f4f4f4; padding: 0.15rem 0.35rem; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>Finance Toolkit</h1>
+    <p class="muted">Portfolio + Expense tracking web app</p>
+
+    <div class="card">
+      <h2>Portfolio Manager</h2>
+      <p>Add positions manually or auto-fetch market prices from Yahoo Finance.</p>
+      <form method="post" action="/web/portfolio">
+        <label>Symbol:</label>
+        <input name="symbol" required placeholder="AAPL" />
+        <label>Quantity:</label>
+        <input name="quantity" type="number" step="0.01" min="0" required />
+        <label>Buy Price:</label>
+        <input name="buy_price" type="number" step="0.01" min="0" required />
+        <label>Broker:</label>
+        <input name="broker" value="BrokerOne" />
+        <button name="action" value="manual" type="submit">Add (Manual Price)</button>
+        <button name="action" value="fetch" type="submit">Add (Fetch Live Price)</button>
+      </form>
+
+      {% if portfolio_summary %}
+      <h3>Portfolio Summary</h3>
+      <table>
+        <tr><th>Total Invested</th><td>{{ portfolio_summary.total_invested }}</td></tr>
+        <tr><th>Total Current Value</th><td>{{ portfolio_summary.total_current_value }}</td></tr>
+        <tr><th>Gain/Loss</th><td>{{ portfolio_summary.gain_loss }}</td></tr>
+        <tr><th>Return %</th><td>{{ portfolio_summary.return_pct }}</td></tr>
+        <tr><th>Positions</th><td>{{ portfolio_summary.positions_count }}</td></tr>
+      </table>
+      {% endif %}
+
+      {% if anomalies %}
+      <h3>Anomalies</h3>
+      <ul>
+        {% for item in anomalies %}
+        <li class="error">{{ item }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% if fetched_msg %}
+        <p class="ok">{{ fetched_msg }}</p>
+      {% endif %}
+      {% if portfolio_error %}
+        <p class="error">{{ portfolio_error }}</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h2>Expense Manager</h2>
+      <form method="post" action="/web/expense">
+        <label>Type:</label>
+        <select name="kind">
+          <option value="income">income</option>
+          <option value="expense">expense</option>
+        </select>
+        <label>Category:</label>
+        <input name="category" placeholder="salary/rent/groceries" required />
+        <label>Amount:</label>
+        <input name="amount" type="number" min="0" step="0.01" required />
+        <button type="submit">Add Transaction</button>
+      </form>
+
+      {% if expense_summary %}
+      <h3>Expense Summary</h3>
+      <table>
+        <tr><th>Total Income</th><td>{{ expense_summary.income }}</td></tr>
+        <tr><th>Total Expense</th><td>{{ expense_summary.expense }}</td></tr>
+        <tr><th>Net</th><td>{{ expense_summary.net }}</td></tr>
+      </table>
+      {% endif %}
+
+      {% if expense_error %}
+        <p class="error">{{ expense_error }}</p>
+      {% endif %}
+    </div>
+
+    <p>API endpoints remain available at <code>/portfolio/summary</code> and <code>/expense/summary</code>.</p>
+  </body>
+</html>
